@@ -12,7 +12,7 @@ const card = {
   marginBottom: 16,
 }
 
-const label = {
+const labelStyle = {
   display: 'block', fontSize: 11, fontWeight: 700,
   color: '#C8F000', marginBottom: 6,
   textTransform: 'uppercase', letterSpacing: '0.12em',
@@ -59,15 +59,21 @@ export default function OrderForm({ orders }) {
     if (!validate()) return
     setLoading(true)
     try {
-      await addOrder({ id: generateId(), name: name.trim(), restaurant, item, customs, obs: obs.trim(), createdAt: new Date().toISOString() })
+      await addOrder({
+        id: generateId(), name: name.trim(), restaurant, item,
+        customs, obs: obs.trim(), createdAt: new Date().toISOString(),
+      })
       setName(''); setRestaurant(''); setItem(''); setCustoms([]); setObs(''); setErrors({})
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3500)
-    } catch (err) {
+    } catch {
       alert('Erro ao salvar. Verifique sua conexão.')
     }
     setLoading(false)
   }
+
+  const showObs = customs.includes('personalizado') || customs.includes('sem_alface')
+    || customs.includes('sem_tomate') || customs.includes('sem_maionese') || customs.includes('sem_bacon')
 
   return (
     <div style={{ maxWidth: 540, margin: '0 auto', padding: '0 16px 60px' }}>
@@ -75,8 +81,8 @@ export default function OrderForm({ orders }) {
 
         {/* Nome + Restaurante */}
         <div style={card}>
-          <div style={{ marginBottom: 18 }}>
-            <label style={label}>Seu nome *</label>
+          <div style={{ marginBottom: 20 }}>
+            <label style={labelStyle}>Seu nome *</label>
             <input value={name} onChange={e => setName(e.target.value)}
               placeholder="Como quer que apareça na etiqueta?"
               style={errors.name ? { borderColor: '#FF5A5A' } : {}} />
@@ -88,20 +94,18 @@ export default function OrderForm({ orders }) {
             )}
           </div>
 
-          <label style={label}>Restaurante *</label>
+          <label style={labelStyle}>Restaurante *</label>
           {errors.restaurant && <p style={{ ...errStyle, marginBottom: 6 }}>{errors.restaurant}</p>}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {Object.values(RESTAURANTS).map(r => (
               <button key={r.id} type="button"
                 onClick={() => { setRestaurant(r.id); setItem('') }}
                 style={{
-                  padding: '16px 10px',
-                  borderRadius: 14,
+                  padding: '16px 10px', borderRadius: 14,
                   border: restaurant === r.id ? `2px solid ${r.color}` : '1.5px solid rgba(21,101,255,0.3)',
                   background: restaurant === r.id ? `${r.color}22` : 'rgba(255,255,255,0.04)',
                   color: restaurant === r.id ? r.color : '#6A8AAA',
-                  fontFamily: 'Syne, sans-serif',
-                  fontWeight: 700, fontSize: 15,
+                  fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 15,
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                   cursor: 'pointer', transition: 'all 0.15s',
                 }}>
@@ -112,21 +116,32 @@ export default function OrderForm({ orders }) {
           </div>
         </div>
 
-        {/* Lanche + Personalização */}
+        {/* Lanche */}
         {restaurant && (
           <div style={card}>
-            <div style={{ marginBottom: 18 }}>
-              <label style={label}>Lanche *</label>
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Lanche *</label>
+              {errors.item && <p style={{ ...errStyle, marginBottom: 6 }}>{errors.item}</p>}
               <select value={item} onChange={e => setItem(e.target.value)}
-                style={errors.item ? { borderColor: '#FF5A5A' } : {}}>
-                <option value="">Selecione...</option>
-                {rest.items.map(i => <option key={i} value={i}>{i}</option>)}
+                style={{
+                  ...(errors.item ? { borderColor: '#FF5A5A' } : {}),
+                  // Increase height for readability
+                  paddingTop: 10, paddingBottom: 10,
+                }}>
+                <option value="">Selecione o lanche...</option>
+                {rest.categories.map(cat => (
+                  <optgroup key={cat.label} label={cat.label}>
+                    {cat.items.map(i => (
+                      <option key={i} value={i}>{i}</option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
-              {errors.item && <p style={errStyle}>{errors.item}</p>}
             </div>
 
-            <div style={{ marginBottom: 12 }}>
-              <label style={label}>Como quer o lanche? *</label>
+            {/* Personalização */}
+            <div style={{ marginBottom: showObs ? 16 : 0 }}>
+              <label style={labelStyle}>Como quer o lanche? *</label>
               {errors.customs && <p style={{ ...errStyle, marginBottom: 6 }}>{errors.customs}</p>}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
                 {CUSTOMIZATIONS.map(c => {
@@ -156,9 +171,9 @@ export default function OrderForm({ orders }) {
               </div>
             </div>
 
-            {(customs.includes('personalizado') || customs.includes('sem_alface') || customs.includes('sem_tomate') || customs.includes('sem_maionese')) && (
+            {showObs && (
               <div>
-                <label style={label}>Observações</label>
+                <label style={labelStyle}>Observações</label>
                 <textarea value={obs} onChange={e => setObs(e.target.value)}
                   placeholder="Ex: sem sal, pão bem tostado..." rows={2}
                   style={{ resize: 'vertical' }} />
@@ -169,13 +184,10 @@ export default function OrderForm({ orders }) {
 
         {/* Submit */}
         <button type="submit" disabled={loading} style={{
-          width: '100%', padding: '15px',
-          borderRadius: 14,
+          width: '100%', padding: '15px', borderRadius: 14,
           background: rest ? rest.color : 'rgba(21,101,255,0.5)',
-          color: '#fff',
-          fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 16,
-          letterSpacing: '0.03em',
-          border: 'none',
+          color: '#fff', fontFamily: 'Syne, sans-serif', fontWeight: 800,
+          fontSize: 16, letterSpacing: '0.03em', border: 'none',
           boxShadow: rest ? `0 0 24px ${rest.color}55` : 'none',
           transition: 'all 0.2s',
         }}>

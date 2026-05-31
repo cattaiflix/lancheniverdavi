@@ -7,17 +7,57 @@ export const RESTAURANTS = {
     color: '#DA291C',
     accent: '#FFC72C',
     emoji: '🍔',
-    items: [
-      'Big Mac',
-      'Quarter Pounder com Queijo',
-      'McDouble',
-      'McChicken',
-      'Filet-O-Fish',
-      'McCrispy',
-      'Chicken McBistro',
-      'Combo Big Mac',
-      'Combo Quarter Pounder',
-      'Combo McChicken',
+    categories: [
+      {
+        label: '🥩 Carne Bovina — Clássicos',
+        items: [
+          'Big Mac',
+          'Cheddar McMelt',
+          'Duplo Cheddar McMelt',
+          'Quarterão com Queijo',
+          'Duplo Quarterão',
+          'McNífico Bacon',
+          'Duplo Burger Bacon',
+          'Triplo Burger',
+          'Duplo Cheeseburger',
+          'Cheeseburger',
+          'Hamburguer',
+        ],
+      },
+      {
+        label: '🌍 Seleções do Méqui — Duplo (Copa 2026)',
+        items: [
+          'Brasil (duplo)',
+          'Espanha (duplo)',
+          'Argentina (duplo)',
+          'Alemanha (duplo)',
+          'EUA (duplo)',
+          'Itália (polpettone)',
+        ],
+      },
+      {
+        label: '🌍 Seleções do Méqui — Simples (Copa 2026)',
+        items: [
+          'Brasil - 01 Carne',
+          'Espanha - 01 Carne',
+          'Argentina - 01 Carne',
+          'Alemanha - 01 Carne',
+          'EUA - 01 Carne',
+        ],
+      },
+      {
+        label: '🍗 Frango',
+        items: [
+          'McChicken',
+          'McChicken Bacon',
+          'McChicken Duplo',
+          'McCrispy Chicken Legend',
+          'McCrispy Chicken Bacon Ranch',
+          'McCrispy Chicken Deluxe',
+          'Chicken Jr.',
+          'México (frango, nacho, molho jalapeño) — Seleções do Méqui',
+        ],
+      },
     ],
   },
   madero: {
@@ -26,19 +66,42 @@ export const RESTAURANTS = {
     color: '#1B4D2E',
     accent: '#C8A951',
     emoji: '🥩',
-    items: [
-      'Madero Burger',
-      'Prime Burger',
-      'Bacon Burger',
-      'Egg Burger',
-      'Mushroom Burger',
-      'Double Madero',
-      'Chicken Burger',
-      'Veggie Burger',
-      'Costela na Chapa',
-      'Combo Madero Burger',
+    categories: [
+      {
+        label: '🍔 Madero (180g)',
+        items: [
+          'Madero',
+          'Madero Bacon',
+          'Madero Super',
+          'Madero Bacon Super',
+        ],
+      },
+      {
+        label: '🍔 Junior (130g)',
+        items: [
+          'Junior',
+          'Junior Bacon',
+          'Junior Super',
+          'Junior Bacon Super',
+        ],
+      },
+      {
+        label: '🍔 Cordeiro (180g)',
+        items: [
+          'Cordeiro',
+          'Cordeiro Bacon',
+          'Cordeiro Super',
+        ],
+      },
     ],
   },
+}
+
+// Achata todas as categorias em lista plana (para compatibilidade)
+export function getItemsByRestaurant(restaurantId) {
+  const rest = RESTAURANTS[restaurantId]
+  if (!rest) return []
+  return rest.categories.flatMap(cat => cat.items)
 }
 
 export const CUSTOMIZATIONS = [
@@ -50,46 +113,15 @@ export const CUSTOMIZATIONS = [
   { id: 'sem_alface', label: 'Sem alface' },
   { id: 'sem_tomate', label: 'Sem tomate' },
   { id: 'sem_maionese', label: 'Sem maionese' },
+  { id: 'sem_bacon', label: 'Sem bacon' },
   { id: 'pao_carne_queijo', label: 'Só pão, carne e queijo' },
   { id: 'personalizado', label: 'Personalizado (ver obs.)' },
 ]
 
-// ── STORAGE ───────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = 'aniversario_pedidos_v1'
-
-export function loadOrders() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-export function saveOrders(orders) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
-  // Notify other tabs
-  try {
-    const bc = new BroadcastChannel('pedidos_sync')
-    bc.postMessage({ type: 'update', orders })
-    bc.close()
-  } catch {}
-}
+// ── STORAGE / UTILS ────────────────────────────────────────────────────────────
 
 export function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
-}
-
-export function formatTime(iso) {
-  return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-}
-
-export function formatDate(iso) {
-  return new Date(iso).toLocaleString('pt-BR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  })
 }
 
 export function getCustomLabel(customIds = [], obs = '') {
