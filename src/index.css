@@ -1,0 +1,85 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --neon: #C8F000;
+  --blue: #1565FF;
+  --blue-light: #3D8BFF;
+  --dark: #060A10;
+  --surface: rgba(6, 10, 16, 0.82);
+  --surface-card: rgba(10, 18, 35, 0.88);
+  --border: rgba(21, 101, 255, 0.35);
+  --border-neon: rgba(200, 240, 0, 0.4);
+  --text: #FFFFFF;
+  --text-muted: #9BB0CC;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: #060A10;
+  background-image: url('/capa.jpeg');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Dark overlay so text stays readable */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 8, 20, 0.75) 0%,
+    rgba(4, 8, 20, 0.70) 40%,
+    rgba(4, 8, 20, 0.85) 100%
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+h1, h2, h3, h4 { font-family: 'Syne', sans-serif; line-height: 1.2; }
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+button:hover { opacity: 0.88; }
+button:active { transform: scale(0.97); }
+
+input, select, textarea {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(6, 10, 16, 0.7);
+  color: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input::placeholder, textarea::placeholder { color: #5a7090; }
+input:focus, select:focus, textarea:focus { border-color: var(--blue-light); }
+
+select option { background: #0a1223; color: #fff; }
+
+@media print {
+  body { background: white; }
+  body::before { display: none; }
+  .no-print { display: none !important; }
+  .print-page { page-break-after: always; }
+}
